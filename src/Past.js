@@ -2,9 +2,10 @@ import './App.css';
 import Table from './Table';
 
 function Past() {
+  
   return (
     <div className="Past">
-     <Table/>
+     {/* <Table/> */}
      <br/>
     </div>
   );

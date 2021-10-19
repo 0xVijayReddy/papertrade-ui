@@ -16,22 +16,9 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import Switch from '@material-ui/core/Switch';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 
-function createData(name, calories, fat, carbs) {
-  return { name, calories, fat, carbs };
-}
-
-const rows = [
-  createData('BANKNIFTY219236000CE', 'Buy',145.57,-980),
-  createData('BANKNIFTY219236000CE', 'Buy',145.57,-980),
-  createData('BANKNIFTY219236000CE', 'Sell',145.57,-980),
-  createData('BANKNIFTY219236000CE', 'Sell',100.57,-980),
-  createData('BANKNIFTY219236000CE', 'Sell',96.12,-980),
-  
-];
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -60,10 +47,10 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Symbol' },
-  { id: 'calories', numeric: true, disablePadding: false, label: 'Side' },
-  { id: 'fat', numeric: true, disablePadding: false, label: 'Average Price' },
-  { id: 'carbs', numeric: true, disablePadding: false, label: 'P/L' },
+  { id: 'symbol', numeric: false, disablePadding: true, label:"Symbol"},
+  { id: 'side', numeric: true, disablePadding: false, label: 'Side' },
+  { id: 'avgPrice', numeric: true, disablePadding: false, label: 'Average Price' },
+  { id: 'pnl', numeric: true, disablePadding: false, label: 'P/L' },
 ];
 
 function EnhancedTableHead(props) {
@@ -154,13 +141,13 @@ const EnhancedTableToolbar = (props) => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography className={classes.title} variant="h5" id="tableTitle" component="div" color="primary">
-          Nutrition
+        <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
+          {props.title}
         </Typography>
       )}
 
       {numSelected > 0 ? (
-        <Tooltip title="Delete">
+        <Tooltip title="Square Off">
           <IconButton aria-label="delete">
             <DeleteIcon />
           </IconButton>
@@ -185,7 +172,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   paper: {
-    width: '95%',
+    width: '100%',
     marginBottom: theme.spacing(2),
   },
   table: {
@@ -204,13 +191,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EnhancedTable() {
+export default function EnhancedTable(props) {
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('calories');
+  const [orderBy, setOrderBy] = React.useState('side');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (event, property) => {
@@ -221,7 +207,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n.name);
+      const newSelecteds = props.data.map((n) => n.symbol);
       setSelected(newSelecteds);
       return;
     }
@@ -257,23 +243,21 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
-  };
+  
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.data.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length} title={props.title}/>
         <TableContainer>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
+            size= 'small' 
             aria-label="enhanced table"
           >
             <EnhancedTableHead
@@ -283,23 +267,23 @@ export default function EnhancedTable() {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={props.data.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(props.data, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(row.symbol);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.name)}
+                      onClick={(event) => handleClick(event, row.symbol)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.name}
+                      key={row.symbol}
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
@@ -308,29 +292,25 @@ export default function EnhancedTable() {
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
                       </TableCell>
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
-                        {row.name}
-                      </TableCell>
-                      <TableCell align="right">{row.calories}</TableCell>
-                      <TableCell align="right">{row.fat}</TableCell>
-                      <TableCell align="right">{row.carbs}</TableCell>
-                      <TableCell align="right">{row.protein}</TableCell>
+                      <TableCell component="th" id={labelId} scope="row" padding="none">{row.symbol}</TableCell>
+                      <TableCell align="right">{row.side}</TableCell>
+                      <TableCell align="right">{row.avgPrice}</TableCell>
+                      <TableCell align="right">{row.pnl}</TableCell>
                     </TableRow>
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                <TableRow style={{ height:33 *emptyRows}}>
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
             </TableBody>
           </Table>
-         fuck   
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[4,8]}
+          rowsPerPageOptions={[5,10]}
           component="div"
-          count={rows.length}
+          count={props.data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -341,3 +321,130 @@ export default function EnhancedTable() {
     </div>
   );
 }
+
+
+
+// import * as React from 'react';
+// import PropTypes from 'prop-types';
+// import IconButton from '@material-ui/core/IconButton';
+// import TextField from '@material-ui/core/TextField';
+// import {
+//   DataGrid,
+//   GridToolbarDensitySelector,
+//   GridToolbarFilterButton,
+// } from '@mui/x-data-grid';
+// import ClearIcon from '@material-ui/icons/Clear';
+// import SearchIcon from '@material-ui/icons/Search';
+// import { createTheme } from '@material-ui/core/styles';
+// import { makeStyles } from '@material-ui/styles';
+
+// function escapeRegExp(value) {
+//   return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+// }
+
+// const defaultTheme = createTheme();
+// const useStyles = makeStyles(
+//   (theme) => ({
+//     root: {
+//       padding: theme.spacing(0.5, 0.5, 0),
+//       justifyContent: 'space-between',
+//       display: 'flex',
+//       alignItems: 'flex-start',
+//       flexWrap: 'wrap',
+//     },
+//     textField: {
+//       [theme.breakpoints.down('xs')]: {
+//         width: '100%',
+//       },
+//       margin: theme.spacing(1, 0.5, 1.5),
+//       '& .MuiSvgIcon-root': {
+//         marginRight: theme.spacing(0.5),
+//       },
+//       '& .MuiInput-underline:before': {
+//         borderBottom: `1px solid ${theme.palette.divider}`,
+//       },
+//     },
+//   }),
+//   { defaultTheme },
+// );
+
+// function QuickSearchToolbar(props) {
+//   const classes = useStyles();
+
+//   return (
+//     <div className={classes.root}>
+//       <div>
+//         <GridToolbarFilterButton />
+//         <GridToolbarDensitySelector />
+//       </div>
+//       <TextField
+//         variant="standard"
+//         value={props.value}
+//         onChange={props.onChange}
+//         placeholder="Search…"
+//         className={classes.textField}
+//         InputProps={{
+//           startAdornment: <SearchIcon fontSize="small" />,
+//           endAdornment: (
+//             <IconButton
+//               title="Clear"
+//               aria-label="Clear"
+//               size="small"
+//               style={{ visibility: props.value ? 'visible' : 'hidden' }}
+//               onClick={props.clearSearch}
+//             >
+//               <ClearIcon fontSize="small" />
+//             </IconButton>
+//           ),
+//         }}
+//       />
+//     </div>
+//   );
+// }
+
+// QuickSearchToolbar.propTypes = {
+//   clearSearch: PropTypes.func.isRequired,
+//   onChange: PropTypes.func.isRequired,
+//   value: PropTypes.string.isRequired,
+// };
+
+// export default function QuickFilteringGrid() {
+//   const data = {
+//     rows:[{id:1,name:"vijay",age:20},{id:2,name:"john",age:26}]
+//   };
+
+//   const [searchText, setSearchText] = React.useState('');
+//   const [rows, setRows] = React.useState(data.rows);
+
+//   const requestSearch = (searchValue) => {
+//     setSearchText(searchValue);
+//     const searchRegex = new RegExp(escapeRegExp(searchValue), 'i');
+//     const filteredRows = data.rows.filter((row) => {
+//       return Object.keys(row).some((field) => {
+//         return searchRegex.test(row[field].toString());
+//       });
+//     });
+//     setRows(filteredRows);
+//   };
+
+//   React.useEffect(() => {
+//     setRows(data.rows);
+//   }, [data.rows]);
+
+//   return (
+//     <div style={{ height: 400, width: '100%' }}>
+//       <DataGrid
+//         components={{ Toolbar: QuickSearchToolbar }}
+//         rows={rows}
+//         columns={data.columns}
+//         componentsProps={{
+//           toolbar: {
+//             value: searchText,
+//             onChange: (event) => requestSearch(event.target.value),
+//             clearSearch: () => requestSearch(''),
+//           },
+//         }}
+//       />
+//     </div>
+//   );
+// }

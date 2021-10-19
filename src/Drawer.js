@@ -10,13 +10,12 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import MailIcon from "@material-ui/icons/Mail";
 import MenuIcon from "@material-ui/icons/Menu";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { Switch, Route, Link, BrowserRouter } from "react-router-dom";
-import CreateIcon from '@material-ui/icons/Create';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import TimelapseIcon from '@material-ui/icons/Timelapse'
 import Create from "./Create";
@@ -74,7 +73,7 @@ function ResponsiveDrawer(props) {
       <Divider />
         <List>
             <ListItem button key="Create strategy" component={Link} to="/create">
-                <ListItemIcon><CreateIcon/></ListItemIcon>
+                <ListItemIcon><AddCircleOutlineIcon/></ListItemIcon>
                 <ListItemText primary="Create strategy"/>
             </ListItem>
             <ListItem button key="Active stratagies" component={Link} to="/">
